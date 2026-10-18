@@ -1,8 +1,9 @@
-# 指令：生成 n=1000/2000/4000/8000 的随机整数数组各一份；分别用"冒泡排序(自己实现)"和"合并排序(Step1的)"计时，用 timeit 每档跑3次取均值；输出对照表：n、冒泡耗时、合并耗时、倍数关系
+# 帮我生成 n=1000/2000/4000/8000 的随机整数数组各一份；分别用"冒泡排序(自己实现)"和"合并排序(Step1的)"计时，用 timeit 每档跑3次取均值；输出对照表：n、冒泡耗时、合并耗时、倍数关系
 # 现在帮我检查一下n 翻倍时，冒泡耗时≈×4，合并耗时≈×2；n=8000 时合并比冒泡快一个数量级以上。如果有错误，可以修改上面的程序
 # 输出对照表：n、冒泡耗时、合并耗时、倍数关系
 # 现在帮我检查一下n 翻倍时，冒泡耗时≈×4，合并耗时≈×2；n=8000 时合并比冒泡快一个数量级以上。如果有错误，可以修改上面的程序
 # 把 benchmark 扩展到 Python 内置 sorted()，对比”轮子 vs 自造” 15
+# 帮我看看（ benchmark.py 7 - 165 ）为什么它的运行结果里 Terminal 会出现多行重复
 
 import random
 import timeit
@@ -93,7 +94,10 @@ def verify_results(sort_results: list) -> bool:
         bubble_word = "符合" if bubble_ok else "不符"
         merge_word = "符合" if merge_ok else "不符"
         sorted_word = "符合" if sorted_ok else "不符"
-        print(f"n {prev['n']} -> {curr['n']}: 冒泡 ×{bubble_ratio:.2f} (期望≈4, {bubble_word}) | 合并 ×{merge_ratio:.2f} (期望≈2, {merge_word}) | sorted ×{sorted_ratio:.2f} (期望≈2, {sorted_word})")
+        print(f"n {prev['n']} -> {curr['n']}:")
+        print(f"  冒泡   x{bubble_ratio:.2f}  (期望约4, {bubble_word})")
+        print(f"  合并   x{merge_ratio:.2f}  (期望约2, {merge_word})")
+        print(f"  sorted x{sorted_ratio:.2f}  (期望约2, {sorted_word})")
 
     # 检查 n=8000 时合并是否比冒泡快一个数量级以上
     last = sort_results[-1]
@@ -101,9 +105,9 @@ def verify_results(sort_results: list) -> bool:
     speedup_ok = speedup >= 10
     if not speedup_ok:
         all_ok = False
-    print(f"\nn={last['n']}: 合并比冒泡快 {speedup:.1f} 倍 (要求≥10倍, {'符合' if speedup_ok else '不符'})")
+    print(f"\nn={last['n']}: 合并比冒泡快 {speedup:.1f} 倍 (要求>=10倍, {'符合' if speedup_ok else '不符'})")
 
-    print("\n结论: " + ("全部符合预期" if all_ok else "存在不符项（可能是计时噪声，可把 REPEAT 调大重跑）"))
+    print("\n结论: " + ("全部符合预期" if all_ok else "存在不符项(可能是计时噪声, 可把 REPEAT 调大重跑)"))
     return all_ok
 
 

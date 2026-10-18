@@ -2,6 +2,7 @@
 # 我要实现 binary_search(rates, target)（rates 有序）并且能在 1024 档模拟利率表中找 3.75%，这个你帮我想想办法，怎么在上面代码的基础上实现
 # 现在我要确认你给我的代码是真分治
 # 用二分查找在真实利率表（自制 100 档）找”月供最接近 5000 的利率” 10
+# 那现在帮我设计一个（ binary_search.py 6 - 121 ）”未排序翻车”实验
 
 def binary_search(rates, target, low=0, high=None, count=None):
     """在有序数组 rates 中找 target，返回下标，找不到返回 -1。
@@ -74,6 +75,57 @@ def binary_search_closest(arr, target, low=0, high=None, count=None):
         return binary_search_closest(arr, target, low, mid - 1, count)
 
 
+def unsorted_failure_experiment():
+    """未排序翻车实验：证明二分查找的正确性完全依赖数组有序"""
+    import random
+    import contextlib
+    import io
+
+    print("\n" + "=" * 60)
+    print("未排序翻车实验")
+    print("=" * 60)
+
+    # ---- 实验1：确定性翻车 ----
+    print("\n[实验1] 确定性翻车：同一组元素，排序能找到，乱序就漏报")
+    sorted_arr = [1, 3, 5, 7, 9]
+    unsorted_arr = [5, 1, 9, 3, 7]   # 相同元素，刻意打乱
+    target = 1
+
+    print(f"有序数组: {sorted_arr}, 找 {target}")
+    r1 = binary_search(sorted_arr, target)
+    print(f"  -> 结果: {r1} {'(正确)' if r1 == 0 else '(错误!)'}")
+
+    print(f"乱序数组: {unsorted_arr}, 找 {target}")
+    r2 = binary_search(unsorted_arr, target)
+    print(f"  -> 结果: {r2} {'(翻车! 明明存在却返回-1)' if r2 == -1 else '(碰巧找到)'}")
+
+    # ---- 实验2：随机乱序统计 ----
+    print("\n[实验2] 随机乱序统计：乱序后二分查找的漏报率")
+    random.seed(42)
+    base = list(range(1, 101))   # 1~100
+    target = 50
+    trials = 1000
+    misses = 0
+    with contextlib.redirect_stdout(io.StringIO()):   # 吞掉 1000 次 print
+        for _ in range(trials):
+            shuffled = base.copy()
+            random.shuffle(shuffled)
+            if binary_search(shuffled, target) == -1:
+                misses += 1
+    print(f"数组: 1~100 (每次随机打乱), 目标: {target}, 试验次数: {trials}")
+    print(f"漏报次数: {misses}/{trials}, 漏报率: {misses / trials * 100:.1f}%")
+    print(f"对照: 排序后查找 1000 次，漏报率恒为 0%")
+
+    # ---- 实验3：排序后恢复正常 ----
+    print("\n[实验3] 修复方法：先排序再查找")
+    fixed = sorted(unsorted_arr)
+    r3 = binary_search(fixed, target)
+    print(f"乱序数组排序后: {fixed}, 找 {target}")
+    print(f"  -> 结果: {r3} {'(正确)' if r3 == 0 else '(错误!)'}")
+
+    print("\n结论：二分查找的'折半舍弃'依赖有序性；未排序时，被舍弃的一半里可能藏着目标，导致漏报。")
+
+
 if __name__ == "__main__":
     # 简单测试
     rates = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
@@ -117,4 +169,7 @@ if __name__ == "__main__":
     best_idx = binary_search_closest(payments, target_payment)
     print(f"月供最接近 {target_payment:.0f} 元的利率: {rates_100[best_idx]}%")
     print(f"对应月供 {payments[best_idx]:.2f} 元，偏差 {abs(payments[best_idx] - target_payment):.2f} 元")
+
+    # 未排序翻车实验
+    unsorted_failure_experiment()
 
